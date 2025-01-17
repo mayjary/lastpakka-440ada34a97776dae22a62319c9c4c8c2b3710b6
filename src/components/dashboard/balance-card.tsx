@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "react-hot-toast";
+import { Skeleton } from "../ui/skeleton";
 
 const BalanceCard = () => {
   const [balance, setBalance] = useState(0);
@@ -36,7 +37,7 @@ const BalanceCard = () => {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <p>Loading...</p>
+          <div><Skeleton className="w-[100px] h-[20px] rounded-full" /></div>
         ) : (
           <p className="text-3xl font-bold">₹{balance.toFixed(2)}</p>
         )}

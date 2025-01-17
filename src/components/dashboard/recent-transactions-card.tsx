@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-hot-toast";
 import { Transaction } from "@/types/transaction";
+import { getLoggedInUser } from "@/lib/actions/user.actions";
+import { Skeleton } from "../ui/skeleton";
 
 const TransactionForm = ({
   transaction,
@@ -105,12 +107,14 @@ const RecentTransactionsCard = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
 
   const fetchTransactions = async () => {
     setLoading(true);
     try {
       console.log("Fetching transactions...");
-      const response = await fetch('/api/transactions');
+      const response = await fetch(`/api/transactions?email=${user?.email}`);
       console.log("Response status:", response.status);
       if (!response.ok) {
         const errorText = await response.text();
@@ -136,7 +140,7 @@ const RecentTransactionsCard = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(transaction),
+        body: JSON.stringify({ ...transaction, email: user?.email }),
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -160,7 +164,7 @@ const RecentTransactionsCard = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id, email: user?.email }),
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -175,7 +179,14 @@ const RecentTransactionsCard = () => {
   };
 
   useEffect(() => {
-    fetchTransactions();
+    const fetchUserAndTransactions = async () => {
+      const loggedInUser = await getLoggedInUser();
+      setUser(loggedInUser);
+      if (loggedInUser?.email) {
+        fetchTransactions();
+      }
+    };
+    fetchUserAndTransactions();
   }, []);
 
   return (
@@ -197,7 +208,7 @@ const RecentTransactionsCard = () => {
               transaction={{
                 description: "",
                 amount: 0,
-                type: "income",
+                type: "expense",
                 category: "",
                 date: new Date().toISOString().split('T')[0],
               }}
@@ -209,7 +220,11 @@ const RecentTransactionsCard = () => {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <p>Loading transactions...</p>
+          <div>
+            <Skeleton className="w-[100px] h-[20px] rounded-full" /><p></p>
+            <Skeleton className="w-[100px] h-[20px] rounded-full" /><p></p>
+            <Skeleton className="w-[100px] h-[20px] rounded-full" /><p></p>
+        </div>
         ) : (
           <ul className="space-y-4">
             {transactions.slice(0, 5).map((transaction) => (
@@ -220,7 +235,7 @@ const RecentTransactionsCard = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <p className={`font-bold ${transaction.type === "income" ? "text-green-600" : "text-red-600"}`}>
-                    {transaction.type === "income" ? "+" : "-"} ₹{transaction.amount.toFixed(2)}
+                    {transaction.type === "income" ? "+" : "-"} ${transaction.amount.toFixed(2)}
                   </p>
                   <Dialog>
                     <DialogTrigger asChild>

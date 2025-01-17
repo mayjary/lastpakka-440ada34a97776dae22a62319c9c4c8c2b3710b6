@@ -11,7 +11,7 @@ const {
 
 export async function GET(request: NextRequest) {
   const user = await getLoggedInUser();
-  const email = user?.email;
+  const email = user.email;
 
   if (!email) {
     return NextResponse.json({ error: "Email is required" }, { status: 400 });

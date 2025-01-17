@@ -6,6 +6,7 @@ import IncomeExpenseCard from "@/components/dashboard/income-expense-card"
 import SpendingReportCard from "@/components/dashboard/spending-report-card"
 import RecentTransactionsCard from "@/components/dashboard/recent-transactions-card"
 import { getLoggedInUser } from "@/lib/actions/user.actions"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
@@ -19,7 +20,13 @@ export default function Dashboard() {
   }, [])
 
   if (!user) {
-    return <div>Loading...</div> 
+    return <div className="flex flex-col space-y-3">
+              <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-[250px]" />
+                    <Skeleton className="h-4 w-[200px]" />
+            </div>
+  </div> 
   }
 
   return (

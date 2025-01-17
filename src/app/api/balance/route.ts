@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
-import { createClient, getUserId } from "@/lib/appwrite";
+import { createClient } from "@/lib/appwrite";
 import { Query } from 'node-appwrite';
+import { getLoggedInUser } from '@/lib/actions/user.actions';
+
 
 const {
   APPWRITE_DATABASE_ID: DATABASE_ID,
@@ -8,13 +10,14 @@ const {
 } = process.env;
 
 export async function GET(request: Request) {
-    const userId = await getUserId();
+  const user = await getLoggedInUser();
+  const email = user?.email;
 
-  if (!userId) {
-    return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+  if (!email) {
+    return NextResponse.json({ error: "Email is required" }, { status: 400 });
   }
 
-  console.log("GET /api/balance called for user:", userId);
+  console.log("GET /api/balance called for email:", email);
   try {
     const { databases } = await createClient();
     console.log("Appwrite client created successfully");
@@ -26,7 +29,7 @@ export async function GET(request: Request) {
     const response = await databases.listDocuments(
       DATABASE_ID,
       USER_COLLECTION_ID,
-      [Query.equal("userId", userId)]
+      [Query.equal("email", email)]
     );
 
     const balance = response.documents.reduce((sum, doc) => {

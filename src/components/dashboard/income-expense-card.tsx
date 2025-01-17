@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "../ui/skeleton";
 // import { toast } from "react-hot-toast";
 
 interface IncomeExpense {
@@ -41,7 +42,9 @@ const IncomeExpenseCard = () => {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <p>Loading...</p>
+          <div>
+            <Skeleton className="w-[100px] h-[20px] rounded-full" />
+          </div>
         ) : (
           <div className="flex justify-between">
             <div>

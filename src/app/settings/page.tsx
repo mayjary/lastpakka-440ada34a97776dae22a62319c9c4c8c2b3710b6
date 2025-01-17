@@ -12,7 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { logoutAccount, getLoggedInUser } from "@/lib/actions/user.actions"
 import PlaidLink from "@/components/PlaidLink"
 
-// This is a placeholder. Replace with actual currency data.
 const currencies = [
   { code: "USD", name: "US Dollar" },
   { code: "EUR", name: "Euro" },
@@ -49,7 +48,7 @@ export default function SettingsPage() {
 
   const handleCurrencyChange = (value: string) => {
     setCurrency(value)
-    // Here you would typically update this in your backend or state management system
+    // update this in backend 
   }
 
   return (

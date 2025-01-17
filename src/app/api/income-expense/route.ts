@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createClient, getUserId } from "@/lib/appwrite";
+import { createClient } from "@/lib/appwrite";
 import { Query } from 'node-appwrite';
+import { getLoggedInUser } from '@/lib/actions/user.actions';
 
 const {
   APPWRITE_DATABASE_ID: DATABASE_ID,
@@ -8,13 +9,14 @@ const {
 } = process.env;
 
 export async function GET(request: Request) {
-    const userId = await getUserId();
+  const user = await getLoggedInUser();
+  const email = user?.email;
 
-  if (!userId) {
-    return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+  if (!email) {
+    return NextResponse.json({ error: "Email is required" }, { status: 400 });
   }
 
-  console.log("GET /api/income-expense called for user:", userId);
+  console.log("GET /api/income-expense called for email:", email);
   try {
     const { databases } = await createClient();
     console.log("Appwrite client created successfully");
@@ -23,20 +25,19 @@ export async function GET(request: Request) {
       throw new Error("Database ID or Collection ID is missing");
     }
 
-    const incomeResponse = await databases.listDocuments(
+    const response = await databases.listDocuments(
       DATABASE_ID,
       USER_COLLECTION_ID,
-      [Query.equal("userId", userId), Query.equal("type", "income")]
+      [Query.equal("email", email)]
     );
 
-    const expenseResponse = await databases.listDocuments(
-      DATABASE_ID,
-      USER_COLLECTION_ID,
-      [Query.equal("userId", userId), Query.equal("type", "expense")]
-    );
+    const income = response.documents
+      .filter(doc => doc.type === 'income')
+      .reduce((sum, doc) => sum + (doc.amount || 0), 0);
 
-    const income = incomeResponse.documents.reduce((sum, doc) => sum + (doc.amount || 0), 0);
-    const expense = expenseResponse.documents.reduce((sum, doc) => sum + (doc.amount || 0), 0);
+    const expense = response.documents
+      .filter(doc => doc.type === 'expense')
+      .reduce((sum, doc) => sum + (doc.amount || 0), 0);
 
     console.log("Calculated income/expense:", { income, expense });
 
