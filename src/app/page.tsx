@@ -40,7 +40,10 @@ export default function Dashboard() {
       </div>
       <SpendingReportCard />
       <RecentTransactionsCard/>
-      <Chatbot/>
+      <div className="mt-[-10px]">
+        <Chatbot/>
+      </div>
+      
     </div>
   )
 }
