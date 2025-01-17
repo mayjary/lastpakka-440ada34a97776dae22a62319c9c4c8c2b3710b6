@@ -7,6 +7,7 @@ import SpendingReportCard from "@/components/dashboard/spending-report-card"
 import RecentTransactionsCard from "@/components/dashboard/recent-transactions-card"
 import { getLoggedInUser } from "@/lib/actions/user.actions"
 import { Skeleton } from "@/components/ui/skeleton"
+import Chatbot from "@/components/Chatbot"
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
@@ -35,9 +36,11 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <BalanceCard />
         <IncomeExpenseCard/>
+        
       </div>
       <SpendingReportCard />
       <RecentTransactionsCard/>
+      <Chatbot/>
     </div>
   )
 }

@@ -6,7 +6,22 @@ declare type SearchParamProps = {
   };
   
   // ========================================
-  
+  export {};
+
+declare global {
+  interface Window {
+    botpressWebChat: {
+      init: (config: {
+        botId: string;
+        hostUrl: string;
+        messagingUrl?: string;
+        clientId?: string;
+        composerPlaceholder?: string;
+        botConversationDescription?: string;
+      }) => void;
+    };
+  }
+}
   declare type SignUpParams = {
     firstName: string;
     lastName: string;
