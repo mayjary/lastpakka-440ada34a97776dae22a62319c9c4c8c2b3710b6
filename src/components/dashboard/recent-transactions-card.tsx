@@ -197,7 +197,7 @@ const RecentTransactionsCard = () => {
               transaction={{
                 description: "",
                 amount: 0,
-                type: "expense",
+                type: "income",
                 category: "",
                 date: new Date().toISOString().split('T')[0],
               }}
@@ -216,11 +216,11 @@ const RecentTransactionsCard = () => {
               <li key={transaction.id} className="flex justify-between items-center">
                 <div>
                   <p className="font-medium">{transaction.description}</p>
-                  <p className="text-sm text-muted-foreground">{transaction.date}</p>
+                  {/* <p className="text-sm text-muted-foreground">{transaction.date}</p> */}
                 </div>
                 <div className="flex items-center space-x-2">
                   <p className={`font-bold ${transaction.type === "income" ? "text-green-600" : "text-red-600"}`}>
-                    {transaction.type === "income" ? "+" : "-"} ${transaction.amount.toFixed(2)}
+                    {transaction.type === "income" ? "+" : "-"} ₹{transaction.amount.toFixed(2)}
                   </p>
                   <Dialog>
                     <DialogTrigger asChild>

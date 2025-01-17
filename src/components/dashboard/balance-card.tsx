@@ -19,7 +19,7 @@ const BalanceCard = () => {
       setBalance(result.balance);
     } catch (error) {
       console.error("Error fetching balance:", error);
-      toast.error("Failed to load balance.");
+      // toast.error("Failed to load balance.");
     } finally {
       setLoading(false);
     }
@@ -38,7 +38,7 @@ const BalanceCard = () => {
         {loading ? (
           <p>Loading...</p>
         ) : (
-          <p className="text-3xl font-bold">${balance.toFixed(2)}</p>
+          <p className="text-3xl font-bold">₹{balance.toFixed(2)}</p>
         )}
       </CardContent>
     </Card>

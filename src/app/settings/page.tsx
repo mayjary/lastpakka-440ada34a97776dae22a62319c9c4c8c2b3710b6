@@ -1,5 +1,6 @@
 "use client"
 
+import { Skeleton } from "@/components/ui/skeleton"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -114,7 +115,7 @@ export default function SettingsPage() {
                 Please log in to manage your account settings.
               </p>
               <Button asChild>
-                <Link href="/login">Login / Signup</Link>
+                <Link href="/sign-in">Login / Signup</Link>
               </Button>
             </div>
           )}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "react-hot-toast";
+// import { toast } from "react-hot-toast";
 
 interface IncomeExpense {
   income: number;
@@ -24,7 +24,7 @@ const IncomeExpenseCard = () => {
       setData(result);
     } catch (error) {
       console.error("Error fetching income/expense data:", error);
-      toast.error("Failed to load income/expense data.");
+      // toast.error("Failed to load income/expense data.");
     } finally {
       setLoading(false);
     }
@@ -46,11 +46,11 @@ const IncomeExpenseCard = () => {
           <div className="flex justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Income</p>
-              <p className="text-2xl font-bold text-green-600">${data.income.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-green-600">₹{data.income.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Expense</p>
-              <p className="text-2xl font-bold text-red-600">${data.expense.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-red-600">₹{data.expense.toFixed(2)}</p>
             </div>
           </div>
         )}
