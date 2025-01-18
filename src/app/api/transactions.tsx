@@ -16,7 +16,7 @@ export async function getTransactions(): Promise<Transaction[]> {
         DATABASE_ID!,
         TRANSACTION_COLLECTION_ID!
       );
-      console.log(response); // Check if data is fetched
+      console.log(response); 
       return response.documents.map((doc) => ({
         id: doc.$id,
         description: doc.description || "",
