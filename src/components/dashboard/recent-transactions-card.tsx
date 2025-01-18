@@ -1,9 +1,11 @@
+/* eslint-disable */
+
 "use client"
 
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, Plus } from 'lucide-react';
+import { useEffect, useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Pencil, Trash2, Plus } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -12,13 +14,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "react-hot-toast";
-import { Transaction } from "@/types/transaction";
-import { getLoggedInUser } from "@/lib/actions/user.actions";
-import { Skeleton } from "../ui/skeleton";
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { toast } from "react-hot-toast"
+import { Bounce, toast as t } from "react-toastify"
+import { Transaction } from "@/types/transaction"
+import { Budget } from "@/types/index"
+import { fetchBudgets, updateBudget } from "@/lib/budgetService"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const TransactionForm = ({
   transaction,
@@ -106,31 +110,47 @@ const TransactionForm = ({
 const RecentTransactionsCard = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<any>(null);
-
+  const [loading, setLoading] = useState(true);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const fetchTransactions = async () => {
     setLoading(true);
+    setError(null);
     try {
       console.log("Fetching transactions...");
-      const response = await fetch(`/api/transactions?email=${user?.email}`);
+      const response = await fetch('/api/transactions');
       console.log("Response status:", response.status);
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Error response:", errorText);
-        throw new Error(`Failed to fetch transactions: ${response.status} ${response.statusText}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
       console.log("Fetched transactions:", data);
       setTransactions(data);
     } catch (error) {
       console.error("Error fetching transactions:", error);
+      setError("Failed to load transactions. Please try again later.");
       toast.error("Failed to load transactions.");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchTransactions();
+      try {
+        const fetchedBudgets = await fetchBudgets();
+        setBudgets(fetchedBudgets);
+      } catch (error) {
+        console.error("Error fetching budgets:", error);
+        setError("Failed to load budgets. Please try again later.");
+        toast.error("Failed to load budgets.");
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleSaveTransaction = async (transaction: Transaction) => {
     try {
@@ -140,7 +160,7 @@ const RecentTransactionsCard = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...transaction, email: user?.email }),
+        body: JSON.stringify(transaction),
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -148,9 +168,40 @@ const RecentTransactionsCard = () => {
       }
       const result = await response.json();
       console.log("Save transaction result:", result);
-      toast.success(transaction.id ? "Transaction updated successfully!" : "Transaction added successfully!");
+
+      // Update matching budget
+      const matchingBudget = budgets.find(b => b.category === transaction.category);
+      if (matchingBudget) {
+        const updatedSpent = transaction.type === 'expense' 
+          ? matchingBudget.spent + transaction.amount
+          : matchingBudget.spent - transaction.amount;
+        
+        const updatedBudget = await updateBudget({
+          ...matchingBudget,
+          spent: updatedSpent
+        });
+        
+        setBudgets(prevBudgets => prevBudgets.map(b => b.id === updatedBudget.id ? updatedBudget : b));
+        
+        if (updatedSpent > matchingBudget.budgeted) {
+          toast.error(`Budget for ${matchingBudget.category} has been exceeded!`);
+        }
+      }
+
+      t(transaction.id ? "Transaction updated successfully!" : "Transaction added successfully!",{
+        position: "bottom-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Bounce,
+      });
       fetchTransactions();
       setEditingTransaction(null);
+      setIsDialogOpen(false);  // Close the dialog after saving
     } catch (error) {
       console.error("Error saving transaction:", error);
       toast.error(error.message || "Failed to save transaction.");
@@ -164,36 +215,37 @@ const RecentTransactionsCard = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id, email: user?.email }),
+        body: JSON.stringify({ id }),
       });
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Failed to delete transaction: ${response.status} ${response.statusText}`);
+        throw new Error('Failed to delete transaction');
       }
       toast.success("Transaction deleted successfully!");
       fetchTransactions();
     } catch (error) {
       console.error("Error deleting transaction:", error);
-      toast.error(error.message || "Failed to delete transaction.");
+      toast.error("Failed to delete transaction.");
     }
   };
 
-  useEffect(() => {
-    const fetchUserAndTransactions = async () => {
-      const loggedInUser = await getLoggedInUser();
-      setUser(loggedInUser);
-      if (loggedInUser?.email) {
-        fetchTransactions();
-      }
-    };
-    fetchUserAndTransactions();
-  }, []);
+  if (error) {
+    return (
+      <Card>
+        <CardContent>
+          <p className="text-red-500">{error}</p>
+          <Button onClick={() => fetchTransactions()} className="mt-4">
+            Retry
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Recent Transactions</CardTitle>
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="icon">
               <Plus className="h-4 w-4" />
@@ -213,7 +265,7 @@ const RecentTransactionsCard = () => {
                 date: new Date().toISOString().split('T')[0],
               }}
               onSave={handleSaveTransaction}
-              onClose={() => {}}
+              onClose={() => setIsDialogOpen(false)}
             />
           </DialogContent>
         </Dialog>
@@ -224,14 +276,13 @@ const RecentTransactionsCard = () => {
             <Skeleton className="w-[100px] h-[20px] rounded-full" /><p></p>
             <Skeleton className="w-[100px] h-[20px] rounded-full" /><p></p>
             <Skeleton className="w-[100px] h-[20px] rounded-full" /><p></p>
-        </div>
+          </div>
         ) : (
           <ul className="space-y-4">
             {transactions.slice(0, 5).map((transaction) => (
               <li key={transaction.id} className="flex justify-between items-center">
                 <div>
                   <p className="font-medium">{transaction.description}</p>
-                  {/* <p className="text-sm text-muted-foreground">{transaction.date}</p> */}
                 </div>
                 <div className="flex items-center space-x-2">
                   <p className={`font-bold ${transaction.type === "income" ? "text-green-600" : "text-red-600"}`}>

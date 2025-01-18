@@ -9,6 +9,7 @@ interface Transaction {
   date: string;
   type: 'income' | 'expense';
   amount: number;
+  category: string;
 }
 
 interface ChartData {
@@ -28,11 +29,17 @@ const SpendingReportCard = () => {
     const fetchData = async () => {
       const user = await getLoggedInUser()
       if (user?.email) {
-        const response = await fetch(`/api/transactions?email=${user.email}`)
-        if (response.ok) {
-          const transactions: Transaction[] = await response.json()
-          const processedData = processTransactions(transactions)
-          setData(processedData)
+        try {
+          const response = await fetch(`/api/transactions?email=${user.email}`)
+          if (response.ok) {
+            const transactions: Transaction[] = await response.json()
+            const processedData = processTransactions(transactions)
+            setData(processedData)
+          } else {
+            console.error('Error fetching data:', response.statusText)
+          }
+        } catch (error) {
+          console.error('Error fetching data:', error)
         }
       }
     }
@@ -40,35 +47,33 @@ const SpendingReportCard = () => {
   }, [])
 
   const processTransactions = (transactions: Transaction[]): ChartData[] => {
-    const monthlyTotals: { [key: string]: number } = {}
+    const categoryTotals: { [key: string]: number } = {}
     transactions.forEach(transaction => {
-      const date = new Date(transaction.date)
-      const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-      if (!monthlyTotals[monthYear]) {
-        monthlyTotals[monthYear] = 0
-      }
       if (transaction.type === 'expense') {
-        monthlyTotals[monthYear] += transaction.amount
+        if (!categoryTotals[transaction.category]) {
+          categoryTotals[transaction.category] = 0
+        }
+        categoryTotals[transaction.category] += transaction.amount
       }
     })
-    return Object.entries(monthlyTotals)
-      .map(([date, total]) => ({
-        name: new Date(date).toLocaleString('default', { month: 'short' }),
+    return Object.entries(categoryTotals)
+      .map(([category, total]) => ({
+        name: category,
         total
       }))
-      .sort((a, b) => new Date(a.name).getTime() - new Date(b.name).getTime())
-      .slice(-6)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 4) // Show only top 4 categories
   }
 
-  const getBarColor = (total: number) => {
-    return total > 2000 ? "#ef4444" : "#22c55e"
+  const getBarColor = (index: number) => {
+    return index % 2 === 0 ? "#ef4444" : "#1e40af" // Alternating red and navy blue
   }
 
   if (!isMounted) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Spending Report</CardTitle>
+          <CardTitle>Spending Report by Category</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[300px] flex items-center justify-center">
@@ -82,28 +87,35 @@ const SpendingReportCard = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Spending Report</CardTitle>
+        <CardTitle>Spending Report by Category</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
+          <BarChart 
+            data={data} 
+            margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+          >
             <XAxis 
               dataKey="name" 
               stroke="#888888" 
               fontSize={12} 
               tickLine={false} 
-              axisLine={false} 
+              axisLine={true}
             />
             <YAxis 
               stroke="#888888" 
               fontSize={12} 
               tickLine={false} 
-              axisLine={false} 
-              tickFormatter={(value) => `$${value}`} 
+              axisLine={true}
+              tickFormatter={(value) => `$${value}`}
             />
-            <Bar dataKey="total" radius={[4, 4, 0, 0]}>
+            <Bar 
+              dataKey="total" 
+              radius={[0, 0, 0, 0]} // Remove rounded corners
+              maxBarSize={60} // Control bar width
+            >
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={getBarColor(entry.total)} />
+                <Cell key={`cell-${index}`} fill={getBarColor(index)} />
               ))}
             </Bar>
           </BarChart>

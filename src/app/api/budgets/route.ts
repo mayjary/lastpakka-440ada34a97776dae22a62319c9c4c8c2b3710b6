@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from "@/lib/appwrite";
-import { ID, Query } from 'node-appwrite';
-import { getLoggedInUser } from '@/lib/actions/user.actions';
+import { ID } from 'node-appwrite';
+import { Budget } from '@/types/index';
 
 const {
   APPWRITE_DATABASE_ID: DATABASE_ID,
@@ -9,13 +9,7 @@ const {
 } = process.env;
 
 export async function GET(request: NextRequest) {
-  const user = await getLoggedInUser();
-  const email = user?.email;
-
-  if (!email) {
-    return NextResponse.json({ error: "Email is required" }, { status: 400 });
-  }
-
+  console.log(request)
   try {
     const { databases } = await createClient();
 
@@ -25,11 +19,10 @@ export async function GET(request: NextRequest) {
 
     const response = await databases.listDocuments(
       DATABASE_ID,
-      BUDGET_COLLECTION_ID,
-      [Query.equal("email", email)]
+      BUDGET_COLLECTION_ID
     );
 
-    const budgets = response.documents.map((doc) => ({
+    const budgets: Budget[] = response.documents.map((doc) => ({
       id: doc.$id,
       category: doc.category,
       budgeted: doc.budgeted,
@@ -46,19 +39,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const user = await getLoggedInUser();
-  const email = user?.email;
-
-  if (!email) {
-    return NextResponse.json({ error: "Email is required" }, { status: 400 });
-  }
-
   try {
     const body = await request.json();
     const { category, budgeted } = body;
 
-    if (!category || !budgeted) {
-      return NextResponse.json({ error: "Category and budgeted amount are required" }, { status: 400 });
+    if (!category || typeof budgeted !== 'number') {
+      return NextResponse.json({ error: "Invalid category or budgeted amount" }, { status: 400 });
     }
 
     const { databases } = await createClient();
@@ -71,8 +57,7 @@ export async function POST(request: NextRequest) {
       DATABASE_ID,
       BUDGET_COLLECTION_ID,
       ID.unique(),
-      {
-        email,
+      { 
         category,
         budgeted,
         spent: 0,
@@ -89,19 +74,12 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const user = await getLoggedInUser();
-  const email = user?.email;
-
-  if (!email) {
-    return NextResponse.json({ error: "Email is required" }, { status: 400 });
-  }
-
   try {
     const body = await request.json();
     const { id, ...updates } = body;
 
-    if (!id) {
-      return NextResponse.json({ error: "Budget ID is required" }, { status: 400 });
+    if (!id || typeof id !== 'string') {
+      return NextResponse.json({ error: "Invalid budget ID" }, { status: 400 });
     }
 
     const { databases } = await createClient();
@@ -125,19 +103,12 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const user = await getLoggedInUser();
-  const email = user?.email;
-
-  if (!email) {
-    return NextResponse.json({ error: "Email is required" }, { status: 400 });
-  }
-
   try {
     const body = await request.json();
     const { id } = body;
 
-    if (!id) {
-      return NextResponse.json({ error: "Budget ID is required" }, { status: 400 });
+    if (!id || typeof id !== 'string') {
+      return NextResponse.json({ error: "Invalid budget ID" }, { status: 400 });
     }
 
     const { databases } = await createClient();
@@ -154,3 +125,4 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Failed to delete budget" }, { status: 500 });
   }
 }
+

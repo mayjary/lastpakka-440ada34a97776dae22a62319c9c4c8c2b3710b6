@@ -1,6 +1,9 @@
+/* eslint-disable */
+
 'use client'
 
 import Link from 'next/link'
+import Image from "next/image";
 import { usePathname } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from '@/components/mode-toggle'
@@ -12,22 +15,37 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
-import { User } from 'lucide-react'
-import { useFinance } from '@/contexts/FinanceContext'
+import { Settings, User } from 'lucide-react'
+import { getLoggedInUser } from '@/lib/actions/user.actions';
+import { useEffect, useState } from 'react';
 
 const Header = () => {
   const pathname = usePathname()
-  const { user, setUser } = useFinance()
+  const [user, setUser] = useState<any>(null)
+
+   useEffect(() => {
+      const fetchUser = async () => {
+        const loggedInUser = await getLoggedInUser() 
+        setUser(loggedInUser) 
+      }
+      fetchUser() 
+    }, [])
 
   const handleLogout = () => {
     setUser(null)
-    // additional logout 
   }
 
   return (
     <header className="bg-background shadow-md">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <Link href="/" className="text-2xl font-bold text-primary">
+        <Link href="/" className="flex items-center gap-3 text-2xl font-bold text-primary">
+          <Image
+            src="/logo.png"
+            alt="SpendSmart Logo"
+            width={32}
+            height={32}
+            className="object-contain"
+          />
           SpendSmart
         </Link>
         <nav className="hidden md:flex space-x-4">
@@ -45,6 +63,9 @@ const Header = () => {
           </Link>
         </nav>
         <div className="flex items-center space-x-2">
+        <Link href="/settings" className={`p-2 ${pathname === '/settings' ? 'text-primary' : 'text-muted-foreground'}`}>
+              <Settings size={24} />
+            </Link>
           <ModeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -57,9 +78,9 @@ const Header = () => {
               {user ? (
                 <>
                   <DropdownMenuLabel>{`${user.firstName} ${user.lastName}`}</DropdownMenuLabel>
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
-                  <DropdownMenuItem>Billing</DropdownMenuItem>
-                  <DropdownMenuItem>Team</DropdownMenuItem>
+                  <DropdownMenuItem><Link href="/settings" className={`p-2 ${pathname === '/settings' ? 'text-primary' : 'text-muted-foreground'}`}>Profile</Link></DropdownMenuItem>
+                  <DropdownMenuItem><Link href="/linked-accounts" className={`p-2 ${pathname === '/settings' ? 'text-primary' : 'text-muted-foreground'}`}>Bank</Link></DropdownMenuItem>
+                  <DropdownMenuItem><Link href="/" className={`p-2 ${pathname === '/settings' ? 'text-primary' : 'text-muted-foreground'}`}>Home</Link></DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
                 </>

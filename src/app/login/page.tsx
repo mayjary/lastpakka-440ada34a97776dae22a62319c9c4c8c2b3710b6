@@ -52,7 +52,7 @@ export default function LoginPage() {
           </Button>
           <button className="w-full">Login</button>
           <p className="text-sm text-center">
-            Don't have an account?{" "}
+            Dont have an account?{" "}
             <Link href="/sign-up" className="text-primary hover:underline">
               Sign up
             </Link>

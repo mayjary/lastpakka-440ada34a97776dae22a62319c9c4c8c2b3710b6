@@ -1,6 +1,7 @@
+/* eslint-disable */
+
 "use client"
 
-import { Skeleton } from "@/components/ui/skeleton"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"

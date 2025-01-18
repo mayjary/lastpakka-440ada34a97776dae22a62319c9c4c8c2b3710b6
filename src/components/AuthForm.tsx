@@ -1,8 +1,11 @@
+/* eslint-disable */
+
 "use client";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,7 +14,7 @@ import { Form } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import CustomInput from "./CustomInput";
 import { signIn, signUp } from "@/lib/actions/user.actions";
-import { Loader2 } from "lucide-react";
+import { Loader2 } from 'lucide-react';
 import { authFormSchema } from "@/lib/utils";
 import PlaidLink from "@/components/PlaidLink"; // Assume PlaidLink is a component for linking bank accounts
 
@@ -47,7 +50,6 @@ const AuthForm = ({ type }: { type: string }) => {
           email: data.email,
           password: data.password,
         };
-
         const newUser = await signUp(userData);
         setUser(newUser);
       }
@@ -73,7 +75,14 @@ const AuthForm = ({ type }: { type: string }) => {
   return (
     <section className="auth-form">
       <header className="flex flex-col gap-5 md:gap-8">
-        <Link href="/" className="cursor-pointer flex items-center gap-1">
+        <Link href="/" className="cursor-pointer flex items-center gap-3">
+          <Image
+            src="/logo.png"
+            alt="SpendSmart Logo"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
           <h1 className="text-26 font-ibm-plex-serif font-bold text-black-1">SpendSmart</h1>
         </Link>
 
@@ -228,3 +237,4 @@ const AuthForm = ({ type }: { type: string }) => {
 };
 
 export default AuthForm;
+

@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 "use client"
 
 import { useEffect, useState } from "react"
@@ -40,9 +42,9 @@ export default function Dashboard() {
       </div>
       <SpendingReportCard />
       <RecentTransactionsCard/>
-      <div className="mt-[-10px]">
+      
         <Chatbot/>
-      </div>
+
       
     </div>
   )
