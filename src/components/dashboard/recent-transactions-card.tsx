@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 "use client"
 
 import { useEffect, useState } from "react"
@@ -17,8 +15,8 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { toast } from "react-hot-toast"
-import { Bounce, toast as t } from "react-toastify"
+import { ToastContainer, toast, Bounce } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import { Transaction } from "@/types/transaction"
 import { fetchBudgets, updateBudget } from "@/lib/budgetService"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -187,25 +185,18 @@ const RecentTransactionsCard = () => {
         }
       }
 
-      t(transaction.id ? "Transaction updated successfully!" : "Transaction added successfully!",{
-        position: "bottom-center",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "dark",
-        transition: Bounce,
-      });
+      toast.success(transaction.id ? "Transaction updated successfully!" : "Transaction added successfully!");
       fetchTransactions();
       setEditingTransaction(null);
-      setIsDialogOpen(false); 
+      setIsDialogOpen(false);  // Close the dialog after saving
     } catch (error) {
-      console.error("Error saving transaction:", error);
-    
-      const errorMessage = error instanceof Error ? error.message : "Failed to save transaction.";
-      toast.error(errorMessage);
+      if (error instanceof Error) {
+        console.error("Error saving transaction:", error.message);
+        toast.error(error.message || "Failed to save transaction.");
+      } else {
+        console.error("Unknown error:", error);
+        toast.error("An unexpected error occurred.");
+      }
     }
     
   };
@@ -244,82 +235,97 @@ const RecentTransactionsCard = () => {
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Recent Transactions</CardTitle>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="icon">
-              <Plus className="h-4 w-4" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Transaction</DialogTitle>
-              <DialogDescription>Enter the details of your new transaction.</DialogDescription>
-            </DialogHeader>
-            <TransactionForm
-              transaction={{
-                description: "",
-                amount: 0,
-                type: "expense",
-                category: "",
-                date: new Date().toISOString().split('T')[0],
-              }}
-              onSave={handleSaveTransaction}
-              onClose={() => setIsDialogOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <div>
-            <Skeleton className="w-[100px] h-[20px] rounded-full" /><p></p>
-            <Skeleton className="w-[100px] h-[20px] rounded-full" /><p></p>
-            <Skeleton className="w-[100px] h-[20px] rounded-full" /><p></p>
-          </div>
-        ) : (
-          <ul className="space-y-4">
-            {transactions.slice(0, 5).map((transaction) => (
-              <li key={transaction.id} className="flex justify-between items-center">
-                <div>
-                  <p className="font-medium">{transaction.description}</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <p className={`font-bold ${transaction.type === "income" ? "text-green-600" : "text-red-600"}`}>
-                    {transaction.type === "income" ? "+" : "-"} ${transaction.amount.toFixed(2)}
-                  </p>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={() => setEditingTransaction(transaction)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Edit Transaction</DialogTitle>
-                        <DialogDescription>Make changes to your transaction here.</DialogDescription>
-                      </DialogHeader>
-                      {editingTransaction && (
-                        <TransactionForm
-                          transaction={editingTransaction}
-                          onSave={handleSaveTransaction}
-                          onClose={() => setEditingTransaction(null)}
-                        />
-                      )}
-                    </DialogContent>
-                  </Dialog>
-                  <Button variant="ghost" size="icon" onClick={() => handleDeleteTransaction(transaction.id!)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </CardContent>
-    </Card>
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Recent Transactions</CardTitle>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Transaction</DialogTitle>
+                <DialogDescription>Enter the details of your new transaction.</DialogDescription>
+              </DialogHeader>
+              <TransactionForm
+                transaction={{
+                  description: "",
+                  amount: 0,
+                  type: "expense",
+                  category: "",
+                  date: new Date().toISOString().split('T')[0],
+                }}
+                onSave={handleSaveTransaction}
+                onClose={() => setIsDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div>
+              <Skeleton className="w-[100px] h-[20px] rounded-full" /><p></p>
+              <Skeleton className="w-[100px] h-[20px] rounded-full" /><p></p>
+              <Skeleton className="w-[100px] h-[20px] rounded-full" /><p></p>
+            </div>
+          ) : (
+            <ul className="space-y-4">
+              {transactions.slice(0, 5).map((transaction) => (
+                <li key={transaction.id} className="flex justify-between items-center">
+                  <div>
+                    <p className="font-medium">{transaction.description}</p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <p className={`font-bold ${transaction.type === "income" ? "text-green-600" : "text-red-600"}`}>
+                      {transaction.type === "income" ? "+" : "-"} ${transaction.amount.toFixed(2)}
+                    </p>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => setEditingTransaction(transaction)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Edit Transaction</DialogTitle>
+                          <DialogDescription>Make changes to your transaction here.</DialogDescription>
+                        </DialogHeader>
+                        {editingTransaction && (
+                          <TransactionForm
+                            transaction={editingTransaction}
+                            onSave={handleSaveTransaction}
+                            onClose={() => setEditingTransaction(null)}
+                          />
+                        )}
+                      </DialogContent>
+                    </Dialog>
+                    <Button variant="ghost" size="icon" onClick={() => handleDeleteTransaction(transaction.id!)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+      <ToastContainer
+        position="bottom-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        transition={Bounce}
+      />
+    </>
   );
 };
 
