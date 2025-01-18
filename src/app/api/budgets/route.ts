@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from "@/lib/appwrite";
 import { ID } from 'node-appwrite';
-import { Budget } from '@/types/index';
 
 const {
   APPWRITE_DATABASE_ID: DATABASE_ID,

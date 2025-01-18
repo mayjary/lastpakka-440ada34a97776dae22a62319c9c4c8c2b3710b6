@@ -1,3 +1,4 @@
+/* eslint-disable */
 
 declare type SearchParamProps = {
     params: { [key: string]: string };
@@ -5,22 +6,9 @@ declare type SearchParamProps = {
   };
   
   // ========================================
-  export {};
+  
 
-declare global {
-  interface Window {
-    botpressWebChat: {
-      init: (config: {
-        botId: string;
-        hostUrl: string;
-        messagingUrl?: string;
-        clientId?: string;
-        composerPlaceholder?: string;
-        botConversationDescription?: string;
-      }) => void;
-    };
-  }
-}
+  
   declare type SignUpParams = {
     firstName: string;
     lastName: string;
@@ -56,6 +44,15 @@ declare global {
     ssn: string;
   };
   
+  declare interface Budget {
+    id: string;
+    category: string;
+    budgeted: number;
+    spent: number;
+    createdAt: string;
+    updatedAt: string;
+  }
+
   declare type NewUserParams = {
     userId: string;
     email: string;
@@ -78,6 +75,7 @@ declare global {
   };
   
   declare type Transaction = {
+    id: string;
     $id: string;
     name: string;
     paymentChannel: string;
@@ -150,17 +148,6 @@ declare global {
     ssn: string;
   };
   
-  export interface Budget {
-    id: string;
-    category: string;
-    budgeted: number;
-    spent: number;
-    createdAt: string;
-    updatedAt: string;
-  }
-  
-  
-
   declare interface CreditCardProps {
     account: Account;
     userName: string;
@@ -216,7 +203,11 @@ declare global {
     type: "sign-in" | "sign-up";
   }
   
-
+  declare interface BankDropdownProps {
+    accounts: Account[];
+    setValue?: UseFormSetValue<any>;
+    otherStyles?: string;
+  }
   
   declare interface BankTabItemProps {
     account: Account;

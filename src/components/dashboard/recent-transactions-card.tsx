@@ -20,7 +20,6 @@ import { Label } from "@/components/ui/label"
 import { toast } from "react-hot-toast"
 import { Bounce, toast as t } from "react-toastify"
 import { Transaction } from "@/types/transaction"
-import { Budget } from "@/types/index"
 import { fetchBudgets, updateBudget } from "@/lib/budgetService"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -201,11 +200,14 @@ const RecentTransactionsCard = () => {
       });
       fetchTransactions();
       setEditingTransaction(null);
-      setIsDialogOpen(false);  // Close the dialog after saving
+      setIsDialogOpen(false); 
     } catch (error) {
       console.error("Error saving transaction:", error);
-      toast.error(error.message || "Failed to save transaction.");
+    
+      const errorMessage = error instanceof Error ? error.message : "Failed to save transaction.";
+      toast.error(errorMessage);
     }
+    
   };
 
   const handleDeleteTransaction = async (id: string) => {

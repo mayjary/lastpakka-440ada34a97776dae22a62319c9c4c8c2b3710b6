@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label"
 import { PlusCircle } from 'lucide-react'
 import { ToastContainer, toast, Bounce } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { Budget } from "@/types/index"
 
 export default function BudgetContent() {
   const [budgets, setBudgets] = useState<Budget[]>([])

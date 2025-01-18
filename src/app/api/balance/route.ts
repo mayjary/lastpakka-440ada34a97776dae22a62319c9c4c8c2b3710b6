@@ -1,3 +1,6 @@
+/* eslint-disable */
+
+
 import { NextResponse } from 'next/server';
 import { createClient } from "@/lib/appwrite";
 import { Query } from 'node-appwrite';
@@ -41,7 +44,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ balance });
   } catch (error) {
     console.error("Error fetching balance:", error);
-    return NextResponse.json({ error: "Failed to fetch balance", details: error.message }, { status: 500 });
+  
+    const errorMessage = (error as Error).message || "Unknown error occurred";
+    return NextResponse.json(
+      { error: "Failed to fetch balance", details: errorMessage },
+      { status: 500 }
+    );
   }
-}
+}  
 

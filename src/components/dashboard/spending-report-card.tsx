@@ -87,7 +87,7 @@ const SpendingReportCard = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Spending Report by Category</CardTitle>
+        <CardTitle>Spending Report</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
@@ -111,8 +111,8 @@ const SpendingReportCard = () => {
             />
             <Bar 
               dataKey="total" 
-              radius={[0, 0, 0, 0]} // Remove rounded corners
-              maxBarSize={60} // Control bar width
+              radius={[0, 0, 0, 0]} 
+              maxBarSize={60} 
             >
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={getBarColor(index)} />

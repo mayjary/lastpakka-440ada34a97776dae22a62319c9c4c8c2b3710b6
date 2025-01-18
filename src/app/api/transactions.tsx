@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/appwrite";
 import { Transaction } from "@/types/transaction";
-import { Databases, ID } from "node-appwrite";
+import { ID } from "node-appwrite";
 
 const {
   APPWRITE_DATABASE_ID: DATABASE_ID,

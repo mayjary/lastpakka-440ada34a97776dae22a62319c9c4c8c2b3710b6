@@ -1,4 +1,3 @@
-import { Budget } from "@/types/index";
 
 export const fetchBudgets = async (): Promise<Budget[]> => {
   const response = await fetch('/api/budgets');
